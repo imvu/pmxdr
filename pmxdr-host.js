@@ -212,6 +212,7 @@ if (!JSON.stringify) {
 	/**
 	 * Make a request to the server
 	 *
+         * @param string origin
 	 * @param string method
 	 * @param string uri
 	 * @param Object headers
@@ -219,7 +220,7 @@ if (!JSON.stringify) {
 	 * @param Function callback Callback to call when done, callback(request)
 	 * @return XMLHttpRequest
 	 */
-	function makeRequest(method, uri, headers, data, callback) {
+	function makeRequest(origin, method, uri, headers, data, callback) {
 		var header, request;
 
 		request = new XMLHttpRequest();
@@ -232,6 +233,7 @@ if (!JSON.stringify) {
 				}
 			}
 		}
+                request.setRequestHeader('Origin', origin);
 
 		if (typeof data === "string") {
 			request.send(data);
@@ -361,7 +363,7 @@ if (!JSON.stringify) {
 		 * If that returns with a status code of 1223, handle IE's quirk
 		 * and use the headers from the OPTIONS call for CORS.
 		 */
-		makeRequest('OPTIONS', data.uri, data.headers, null, function (optionsRequest) {
+		makeRequest(origin, 'OPTIONS', data.uri, data.headers, null, function (optionsRequest) {
 			optionsCorsHeaders = getCorsHeaders(optionsRequest);
 
 			if (data.method === 'OPTIONS') {
@@ -369,7 +371,7 @@ if (!JSON.stringify) {
 				return;
 			}
 
-			makeRequest(data.method, data.uri, data.headers, data.data, handleResponse);
+			makeRequest(origin, data.method, data.uri, data.headers, data.data, handleResponse);
 		});
 	}
 
