@@ -8,16 +8,12 @@
 
 /*! @source http://purl.eligrey.com/github/pmxdr/blob/master/pmxdr-client.js*/
 
+/*global IMVU:true*/
 var IMVU = IMVU || {};
 (function() {
     if (typeof window === 'undefined') {
         return;
     }
-
-    if (typeof window.opera !== "undefined" && parseInt(window.opera.version(), 10) === 9) // Opera 9.x MessageEvent.origin fix (only for http:, not https:)
-        Event.prototype.__defineGetter__("origin", function(){
-            return "http://" + this.domain;
-        });
 
     function pmxdr(host, onload) {
         var instance = this; // for YUI compressor
@@ -167,24 +163,32 @@ var IMVU = IMVU || {};
     };
 
     function pmxdrResponseHandler(evt) {
+        if (typeof evt.data !== "string") {
+            return;
+        }
+
         var data;
         try {
             data = JSON.parse(evt.data);
         } catch (e) {
             return;
         }
-        if (data.pmxdr === true) { // only handle pmxdr requests
-            if (
-                pmxdr.requests[data.id] &&
-                pmxdr.requests[data.id].origin === evt.origin &&
-                typeof pmxdr.requests[data.id].callback === "function" &&
-                !pmxdr.requests.aborted[data.id]
-            ) pmxdr.requests[data.id].callback(data);
-            else if (pmxdr.requests.aborted[data.id]) {
-                delete pmxdr.requests.aborted[data.id];
-                if (data.id in pmxdr.requests)
-                    delete pmxdr.requests[data.id];
-            }
+        // only handle pmxdr requests
+        if (!_.isObject(data) || data.pmxdr !== true) {
+            return;
+        }
+
+        if (
+            pmxdr.requests[data.id] &&
+            pmxdr.requests[data.id].origin === evt.origin &&
+            typeof pmxdr.requests[data.id].callback === "function" &&
+            !pmxdr.requests.aborted[data.id]
+        ) {
+            pmxdr.requests[data.id].callback(data);
+        } else if (pmxdr.requests.aborted[data.id]) {
+            delete pmxdr.requests.aborted[data.id];
+            if (data.id in pmxdr.requests)
+                delete pmxdr.requests[data.id];
         }
     }
 
