@@ -11,10 +11,6 @@
 /*global IMVU:true*/
 var IMVU = IMVU || {};
 (function() {
-    if (typeof window === 'undefined') {
-        return;
-    }
-
     function pmxdr(host, onload) {
         var instance = this; // for YUI compressor
         instance.iFrame = document.createElement("iframe"); // interface frame
@@ -70,8 +66,9 @@ var IMVU = IMVU || {};
         };
     };
     // parent for interface frames
-    pmxdr.interfaceFrameParent = document.documentElement||document.getElementsByTagName("head")[0]||document.body||document.getElementsByTagName("body")[0];
-
+    if (typeof document !== "undefined") {
+        pmxdr.interfaceFrameParent = document.documentElement||document.getElementsByTagName("head")[0]||document.body||document.getElementsByTagName("body")[0];
+    }
     pmxdr.getSafeID = function() { // generate a random key that doesn't collide with any existing keys
         var randID = Math.random().toString().substr(2); // Generate a random number, make it a string, and cut off the "0." to make it look nice
         if (typeof pmxdr.requests[randID] === "undefined") return randID; // key doesn't collide
@@ -192,8 +189,10 @@ var IMVU = IMVU || {};
         }
     }
 
-    if (window.addEventListener) window.addEventListener("message", pmxdrResponseHandler, false);
-    else if (window.attachEvent) window.attachEvent("onmessage", pmxdrResponseHandler);
+    if (typeof window !== "undefined") {
+        if (window.addEventListener) window.addEventListener("message", pmxdrResponseHandler, false);
+        else if (window.attachEvent) window.attachEvent("onmessage", pmxdrResponseHandler);
+    }
 
     pmxdr.destruct = function() {
         if (window.removeEventListener)
